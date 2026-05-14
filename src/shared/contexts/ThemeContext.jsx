@@ -12,11 +12,12 @@ export function ThemeProvider({ children }) {
   const [isDark, setIsDark] = useState(() => {
     const saved = localStorage.getItem('theme')
     if (saved) return saved === 'dark'
+    // 시스템이 다크모드인지 확인합니다.
     return window.matchMedia('(prefers-color-scheme: dark)').matches
   })
 
   // 2. 테마가 바뀔 때마다 <html> 태그에 'dark' 클래스를 넣다 뺐다 합니다.
-  // 테일윈드는 이 클래스를 보고 색상을 결정합니다.
+  // tailwind.config.js에서 darkMode: 'selector'로 설정했기 때문에 이 클래스가 스타일을 결정합니다.
   useEffect(() => {
     if (isDark) {
       document.documentElement.classList.add('dark')
