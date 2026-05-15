@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { supabase } from '../../shared/supabase/client'
 import { useAuth } from '../../shared/contexts/AuthContext'
 import { useMessage } from '../../shared/contexts/MessageContext'
@@ -6,7 +7,8 @@ import { CommentSection } from './CommentSection'
 import { Button } from '../../shared/components/Button'
 
 /**
- * [PostCard.jsx] - 다크모드 대응 버전
+ * [PostCard.jsx] - 리디자인 버전
+ * 아바타 표시 기능과 작성자 프로필 이동 기능이 추가되었습니다.
  */
 
 export function PostCard({ post, onUpdate }) {
@@ -20,23 +22,20 @@ export function PostCard({ post, onUpdate }) {
     ? supabase.storage.from('images-thumbnail').getPublicUrl(post.images[0].file_path).data.publicUrl
     : null
 
+  // 작성자의 아바타 주소 생성
+  const authorAvatarUrl = post.profiles?.avatar_url
+    ? supabase.storage.from('avatars').getPublicUrl(post.profiles.avatar_url).data.publicUrl
+    : null
+
   const handleRate = async (score) => {
     if (!user) return showMessage('로그인이 필요한 서비스입니다!')
-    
-    // upsert 시 unique 제약 조건(post_id, user_id)을 기준으로 작동하도록 onConflict 추가
     const { error } = await supabase
       .from('ratings')
       .upsert(
         { post_id: post.id, user_id: user.id, score },
         { onConflict: 'post_id,user_id' }
       )
-    
-    if (error) {
-      showMessage(error.message)
-    } else {
-      showMessage(`${score}점을 주셨습니다!`)
-      onUpdate()
-    }
+    if (!error) { showMessage(`${score}점을 주셨습니다!`); onUpdate(); }
   }
 
   const handleUpdate = async () => {
@@ -118,15 +117,24 @@ export function PostCard({ post, onUpdate }) {
               <p className="text-[11px] text-slate-400 dark:text-slate-500 text-center font-bold">Total {post.rating_count} students joined</p>
             </div>
 
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-indigo-500 to-violet-500 flex items-center justify-center text-white text-[10px] font-black">
-                {post.profiles?.username?.[0]?.toUpperCase() || 'U'}
+            {/* 작성자 프로필 영역 (클릭 시 작성자 프로필 페이지로 이동) */}
+            <Link to={`/profile/${post.author_id}`} className="flex items-center gap-3 mb-6 no-underline group/author self-start hover:opacity-80 transition-opacity">
+              <div className="w-10 h-10 rounded-full overflow-hidden bg-gradient-to-tr from-indigo-500 to-violet-500 flex items-center justify-center text-white text-[12px] font-black shadow-md transition-transform group-hover/author:scale-110">
+                {authorAvatarUrl ? (
+                  <img src={authorAvatarUrl} alt="Author" className="w-full h-full object-cover" />
+                ) : (
+                  post.profiles?.username?.[0]?.toUpperCase() || 'U'
+                )}
               </div>
               <div className="flex flex-col">
-                <span className="text-xs font-black text-slate-700 dark:text-slate-300">{post.profiles?.username}</span>
-                <span className="text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase">{new Date(post.created_at).toLocaleDateString()}</span>
+                <span className="text-xs font-black text-slate-700 dark:text-slate-300 group-hover/author:text-indigo-600 dark:group-hover/author:text-indigo-400 transition-colors">
+                  {post.profiles?.username}
+                </span>
+                <span className="text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-tighter">
+                  {new Date(post.created_at).toLocaleDateString()}
+                </span>
               </div>
-            </div>
+            </Link>
           </>
         )}
         

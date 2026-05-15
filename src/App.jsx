@@ -6,6 +6,7 @@ import { FeedPage } from './pages/FeedPage'
 import { MyPage } from './pages/MyPage'
 import { LoginPage } from './pages/LoginPage'
 import { UploadPage } from './pages/UploadPage'
+import { AuthorProfilePage } from './pages/AuthorProfilePage'
 import { Button } from './shared/components/Button'
 
 /**
@@ -15,7 +16,7 @@ import { Button } from './shared/components/Button'
 function App() {
   const { user, signOut, loading } = useAuth()
   const { message } = useMessage()
-  const { isDark, toggleTheme } = useTheme() // 테마 도구 가져오기
+  const { isDark, toggleTheme } = useTheme()
   const navigate = useNavigate()
 
   if (loading) return (
@@ -39,7 +40,6 @@ function App() {
           </Link>
           
           <div className="flex gap-3 items-center">
-            {/* [테마 전환 버튼] */}
             <button 
               onClick={toggleTheme}
               className="w-10 h-10 flex items-center justify-center rounded-2xl bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 shadow-sm hover:shadow-md transition-all duration-300 mr-2"
@@ -79,6 +79,7 @@ function App() {
             <Route path="/login" element={<LoginPage />} />
             <Route path="/upload" element={<UploadPage />} />
             <Route path="/mypage" element={<MyPage />} />
+            <Route path="/profile/:userId" element={<AuthorProfilePage />} />
           </Routes>
         </div>
       </main>
