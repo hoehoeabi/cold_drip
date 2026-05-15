@@ -1,10 +1,11 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "../../shared/contexts/AuthContext";
 import { supabase } from "../../shared/supabase/client";
 import { PostCard } from "./PostCard";
 
 /**
- * [PostList.jsx] - 최종 수정 버전
+ * [PostList.jsx] - 매너리(Masonry) 레이아웃 적용 버전
+ * 표준 그리드의 행 정렬 문제를 해결하기 위해 두 개의 컬럼으로 나누어 렌더링합니다.
  */
 
 export function PostList({ fetchTrigger, isMyPage = false }) {
@@ -15,6 +16,16 @@ export function PostList({ fetchTrigger, isMyPage = false }) {
   const [page, setPage] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
   const limit = 6;
+
+  // [데이터 쪼개기] 게시물을 왼쪽과 오른쪽 컬럼으로 나눕니다.
+  const leftColumnPosts = useMemo(
+    () => posts.filter((_, i) => i % 2 === 0),
+    [posts],
+  );
+  const rightColumnPosts = useMemo(
+    () => posts.filter((_, i) => i % 2 !== 0),
+    [posts],
+  );
 
   const fetchPosts = async () => {
     let query = supabase.from("posts_with_stats").select(
@@ -86,7 +97,7 @@ export function PostList({ fetchTrigger, isMyPage = false }) {
                   setSortBy("popular");
                   setPage(1);
                 }}
-                className={`px-8 py-3 text-base font-black rounded-[20px] transition-all duration-300 ${sortBy === "popular" ? "bg-white dark:bg-slate-600 text-indigo-600 dark:text-indigo-400 shadow-md scale-105" : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"}`}
+                className={`px-8 py-3 text-base font-black rounded-[20px] transition-all duration-300 ${sortBy === "popular" ? "bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-md scale-105" : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"}`}
               >
                 인기순
               </button>
@@ -95,7 +106,7 @@ export function PostList({ fetchTrigger, isMyPage = false }) {
                   setSortBy("recent");
                   setPage(1);
                 }}
-                className={`px-8 py-3 text-base font-black rounded-[20px] transition-all duration-300 ${sortBy === "recent" ? "bg-white dark:bg-slate-600 text-indigo-600 dark:text-indigo-400 shadow-md scale-105" : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"}`}
+                className={`px-8 py-3 text-base font-black rounded-[20px] transition-all duration-300 ${sortBy === "recent" ? "bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-md scale-105" : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"}`}
               >
                 최신순
               </button>
@@ -131,11 +142,29 @@ export function PostList({ fetchTrigger, isMyPage = false }) {
         )}
       </div>
 
-      <ul className="list-none p-0 m-0 grid grid-cols-1 md:grid-cols-2 gap-10 items-start">
-        {posts.map((post) => (
-          <PostCard key={post.id} post={post} onUpdate={fetchPosts} />
-        ))}
-      </ul>
+      {/* [변경] 표준 그리드 대신 두 개의 독립적인 컬럼을 사용합니다 (Masonry 효과) */}
+      <div className="flex flex-col md:flex-row gap-8 items-start">
+        {/* 왼쪽 컬럼 */}
+        <div className="flex-1 grid gap-8 w-full">
+          {leftColumnPosts.map((post) => (
+            <PostCard key={post.id} post={post} onUpdate={fetchPosts} />
+          ))}
+        </div>
+
+        {/* 오른쪽 컬럼 (PC에서만 보임) */}
+        <div className="flex-1 hidden md:grid gap-8 w-full">
+          {rightColumnPosts.map((post) => (
+            <PostCard key={post.id} post={post} onUpdate={fetchPosts} />
+          ))}
+        </div>
+
+        {/* 모바일 대응: 모바일에서는 filter i%2 !== 0 게시물을 왼쪽 컬럼 아래에 붙여줍니다. */}
+        <div className="md:hidden flex flex-col gap-8 w-full">
+          {rightColumnPosts.map((post) => (
+            <PostCard key={post.id} post={post} onUpdate={fetchPosts} />
+          ))}
+        </div>
+      </div>
 
       {!isMyPage && (totalCount > limit || page > 1) && (
         <div className="flex justify-center items-center gap-6 mt-16">
