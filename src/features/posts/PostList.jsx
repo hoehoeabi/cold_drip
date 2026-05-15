@@ -5,6 +5,7 @@ import { PostCard } from './PostCard'
 
 /**
  * [PostList.jsx] - 다크모드 대응 버전
+ * 페이지네이션 버그 수정: 마지막 페이지에서도 네비게이션이 유지되도록 수정했습니다.
  */
 
 export function PostList({ fetchTrigger, isMyPage = false }) {
@@ -13,6 +14,7 @@ export function PostList({ fetchTrigger, isMyPage = false }) {
   const [sortBy, setSortBy] = useState('popular')
   const [filter, setFilter] = useState('all')
   const [page, setPage] = useState(1)
+  const [totalCount, setTotalCount] = useState(0) // 전체 개수 상태 추가
   const limit = 6
 
   const fetchPosts = async () => {
@@ -21,7 +23,7 @@ export function PostList({ fetchTrigger, isMyPage = false }) {
       profiles:author_id(username), 
       images(*), 
       comments(*, profiles:author_id(username))
-    `)
+    `, { count: 'exact' }) // 전체 개수를 가져오도록 설정
     
     if (isMyPage && user) {
       query = query.eq('author_id', user.id).order('created_at', { ascending: false })
@@ -42,8 +44,11 @@ export function PostList({ fetchTrigger, isMyPage = false }) {
       query = query.range((page - 1) * limit, page * limit - 1)
     }
 
-    const { data, error } = await query
-    if (!error) setPosts(data)
+    const { data, error, count } = await query
+    if (!error) {
+      setPosts(data)
+      setTotalCount(count || 0) // 전체 개수 업데이트
+    }
   }
 
   useEffect(() => { 
@@ -103,11 +108,24 @@ export function PostList({ fetchTrigger, isMyPage = false }) {
         ))}
       </ul>
 
-      {!isMyPage && posts.length >= limit && (
+      {/* 페이지네이션: 전체 데이터가 한 페이지 분량보다 많거나, 현재 페이지가 1페이지가 아닐 때 항상 표시 */}
+      {!isMyPage && (totalCount > limit || page > 1) && (
         <div className="flex justify-center items-center gap-6 mt-12">
-          <button className="w-12 h-12 rounded-full border-2 border-slate-200 dark:border-slate-800 flex items-center justify-center disabled:opacity-20 hover:border-indigo-500 dark:hover:border-indigo-400 transition-colors" disabled={page === 1} onClick={() => setPage(p => p - 1)}>←</button>
-          <span className="font-black text-slate-700 dark:text-slate-300">{page}</span>
-          <button className="w-12 h-12 rounded-full border-2 border-slate-200 dark:border-slate-800 flex items-center justify-center disabled:opacity-20 hover:border-indigo-500 dark:hover:border-indigo-400 transition-colors" disabled={posts.length < limit} onClick={() => setPage(p => p + 1)}>→</button>
+          <button 
+            className="w-12 h-12 rounded-full border-2 border-slate-200 dark:border-slate-800 flex items-center justify-center disabled:opacity-20 hover:border-indigo-500 dark:hover:border-indigo-400 transition-colors" 
+            disabled={page === 1} 
+            onClick={() => { setPage(p => p - 1); window.scrollTo(0, 0); }}
+          >
+            ←
+          </button>
+          <span className="font-black text-slate-700 dark:text-slate-300">{page} / {Math.ceil(totalCount / limit)}</span>
+          <button 
+            className="w-12 h-12 rounded-full border-2 border-slate-200 dark:border-slate-800 flex items-center justify-center disabled:opacity-20 hover:border-indigo-500 dark:hover:border-indigo-400 transition-colors" 
+            disabled={page >= Math.ceil(totalCount / limit)} 
+            onClick={() => { setPage(p => p + 1); window.scrollTo(0, 0); }}
+          >
+            →
+          </button>
         </div>
       )}
     </section>
