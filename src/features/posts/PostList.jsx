@@ -85,7 +85,11 @@ export function PostList({ fetchTrigger, isMyPage = false }) {
       <div className="flex flex-col gap-8 mb-10">
         <div className="flex justify-between items-center">
           <h2
-            className={`text-3xl font-black tracking-tight ${isMyPage ? "text-slate-800 dark:text-slate-100" : "text-pink-500"}`}
+            className={`text-3xl font-black tracking-tight ${
+              isMyPage
+                ? "text-slate-800 dark:text-slate-100"
+                : "text-transparent bg-clip-text bg-gradient-to-r from-pink-500 via-indigo-600 to-violet-600"
+            }`}
           >
             {isMyPage ? "내 명예의 전당" : "🔥 랭킹 피드"}
           </h2>
