@@ -34,8 +34,12 @@ function App() {
         <header className="flex justify-between items-center py-6 mb-8">
           <Link to="/" className="group no-underline">
             <div className="flex flex-col">
-              <h1 className="text-4xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-violet-600 dark:from-indigo-400 dark:to-violet-400 group-hover:scale-105 transition-transform duration-300">
-                🧊콜드드립☕️
+              <h1 className="text-4xl font-black tracking-tighter group-hover:scale-105 transition-transform duration-300 flex items-center gap-1">
+                <span className="text-slate-900 dark:text-white">🧊</span>
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-violet-600 dark:from-indigo-400 dark:to-violet-400">
+                  콜드드립
+                </span>
+                <span className="text-slate-900 dark:text-white">☕️</span>
               </h1>
               <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 tracking-widest uppercase ml-0.5 italic">
                 Cold Drip • Keep Calm
