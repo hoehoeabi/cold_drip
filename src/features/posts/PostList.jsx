@@ -21,8 +21,7 @@ export function PostList({ fetchTrigger, isMyPage = false }) {
       `
       *, 
       profiles:author_id(username, avatar_url), 
-      images(*), 
-      comments(*, profiles:author_id(username))
+      images(*)
     `,
       { count: "exact" },
     );
@@ -132,7 +131,7 @@ export function PostList({ fetchTrigger, isMyPage = false }) {
         )}
       </div>
 
-      <ul className="list-none p-0 m-0 grid grid-cols-1 md:grid-cols-2 gap-10">
+      <ul className="list-none p-0 m-0 grid grid-cols-1 md:grid-cols-2 gap-10 items-start">
         {posts.map((post) => (
           <PostCard key={post.id} post={post} onUpdate={fetchPosts} />
         ))}

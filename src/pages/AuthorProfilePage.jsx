@@ -117,7 +117,7 @@ export function AuthorProfilePage() {
         </div>
 
         {posts.length > 0 ? (
-          <ul className="list-none p-0 m-0 grid grid-cols-1 md:grid-cols-2 gap-10">
+          <ul className="list-none p-0 m-0 grid grid-cols-1 md:grid-cols-2 gap-10 items-start">
             {posts.map((post) => (
               <PostCard key={post.id} post={post} onUpdate={fetchAuthorData} />
             ))}
