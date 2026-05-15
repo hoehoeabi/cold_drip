@@ -21,9 +21,9 @@ function App() {
 
   if (loading)
     return (
-      <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex items-center justify-center">
-        <div className="animate-bounce text-indigo-600 dark:text-indigo-400 font-black text-4xl italic">
-          Loading...
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex items-center justify-center transition-colors duration-500">
+        <div className="animate-bounce text-indigo-600 dark:text-indigo-400 font-black text-4xl italic tracking-tighter">
+          콜드드립 내리는 중... ☕️
         </div>
       </div>
     );
@@ -35,10 +35,10 @@ function App() {
           <Link to="/" className="group no-underline">
             <div className="flex flex-col">
               <h1 className="text-4xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-violet-600 dark:from-indigo-400 dark:to-violet-400 group-hover:scale-105 transition-transform duration-300">
-                제목학원
+                🧊콜드드립☕️
               </h1>
               <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 tracking-widest uppercase ml-0.5 italic">
-                Title Academy
+                Cold Drip • Keep Calm
               </span>
             </div>
           </Link>
@@ -58,10 +58,10 @@ function App() {
                   onClick={() => navigate("/upload")}
                   className="shadow-indigo-200 dark:shadow-none"
                 >
-                  글쓰기
+                  드립 붓기
                 </Button>
                 <Button onClick={() => navigate("/mypage")} variant="outline">
-                  내 정보
+                  내 카페
                 </Button>
                 <button
                   onClick={async () => {
@@ -70,7 +70,7 @@ function App() {
                   }}
                   className="text-xs font-bold text-slate-400 hover:text-rose-500 dark:hover:text-rose-400 transition-colors ml-2 uppercase tracking-tight"
                 >
-                  Logout
+                  Leave
                 </button>
               </>
             ) : (
@@ -82,7 +82,9 @@ function App() {
         {message && (
           <div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-50 bg-slate-900 dark:bg-indigo-600 text-white px-6 py-3 rounded-2xl shadow-2xl animate-in fade-in zoom-in slide-in-from-bottom-4 duration-300">
             <p className="m-0 text-sm font-bold flex items-center gap-2">
-              <span className="text-indigo-400 dark:text-white text-lg">✦</span>{" "}
+              <span className="text-indigo-400 dark:text-white text-lg">
+                ☕️
+              </span>{" "}
               {message}
             </p>
           </div>
@@ -94,7 +96,6 @@ function App() {
             <Route path="/login" element={<LoginPage />} />
             <Route path="/upload" element={<UploadPage />} />
             <Route path="/mypage" element={<MyPage />} />
-            {/* [확인] 이 경로가 실제 Link to의 주소와 일치해야 합니다. */}
             <Route path="/profile/:userId" element={<AuthorProfilePage />} />
           </Routes>
         </div>
