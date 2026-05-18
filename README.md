@@ -58,7 +58,68 @@
 
 ---
 
-## 🤖 에이전트 명령 로그 (Agent Command Workflow)
+## 📁 프로젝트 구조
+
+```text
+src/
+ ├── features/      # 도메인별 핵심 기능 (auth, posts, profile)
+ ├── pages/         # 라우팅 단위 페이지 컴포넌트
+ ├── shared/        # 공통 UI 컴포넌트, Context, Supabase Client 등
+ │   ├── components/
+ │   ├── contexts/
+ │   └── supabase/
+ ├── App.jsx        # 최상위 라우팅 및 레이아웃 설정
+ └── main.jsx       # React 진입점 및 전역 Provider 설정
+```
+
+---
+
+## 🏃 실행 방법
+
+### 1. 프로젝트 클론 및 패키지 설치
+
+```bash
+git clone [레포지토리 주소]
+cd week10-subject
+npm install
+```
+
+### 2. 환경변수 설정
+
+프로젝트 루트에 `.env.local` 파일을 생성하고 아래 값을 입력합니다.
+
+```env
+VITE_SUPABASE_URL=당신의_SUPABASE_URL
+VITE_SUPABASE_ANON_KEY=당신의_SUPABASE_ANON_KEY
+```
+
+### 3. 개발 서버 실행
+
+```bash
+npm run dev
+```
+
+---
+
+## 🗄️ Supabase 설정 상세
+
+- **Authentication**: 이메일 기반 로그인/회원가입 사용
+- **Database (PostgreSQL)**:
+  - `profiles`: 회원 정보 (id, username, avatar_url)
+  - `posts`: 드립 게시글 (id, author_id, title, content)
+  - `images`: 게시글 첨부 이미지 정보
+  - `comments`: 게시글 하단 댓글
+  - `ratings` & `comment_ratings`: 별점 데이터 및 유니크 제약조건 적용
+- **Views**:
+  - `posts_with_stats`, `comments_with_stats`: 실시간 평균 별점 및 랭킹 산정을 위한 SQL 뷰 구성
+- **RLS (Row Level Security) 정책**:
+  - `SELECT`: Public 접근 허용 (누구나 랭킹 및 드립 열람 가능)
+  - `INSERT/UPDATE/DELETE`: Authenticated 유저 및 작성자 본인(`auth.uid()`)만 허용
+- **Storage**: `images-thumbnail` (게시물 사진), `avatars` (프로필 사진) 퍼블릭 버킷 사용
+
+---
+
+## 🤖 AI 에이전트 활용 방식 (Agent Command Workflow)
 
 | 단계               | 핵심 명령어 (Prompt)                       | 기술적 구현 및 의사결정                                          |
 | :----------------- | :----------------------------------------- | :--------------------------------------------------------------- |
@@ -92,3 +153,15 @@
 - [ ] **테이크아웃**: 인기 드립을 인스타그램 카드 뉴스로 즉시 내보내는 기능
 - [ ] **바리스타 등급**: 활동량에 따른 계급장 부여 (신입 -> 수석 바리스타)
 - [ ] **아키텍처 전환**: Supabase에서 Spring Boot + Spring Security 구조로 마이그레이션
+      � 싶습니다.
+- **새롭게 배운 점**: Supabase의 RLS 정책 설정과 SQL View를 활용한 통계 쿼리 최적화, 그리고 Tailwind CSS v4의 `@variant dark`를 활용한 시스템/수동 다크모드 제어 방식을 깊이 있게 배웠습니다.
+- **AI 에이전트를 사용하며 느낀 점**: 에이전트는 단순한 '자동 완성기'가 아니라 기획자의 논리와 디렉션에 따라 결과물의 퀄리티가 천차만별로 달라지는 '실행 엔진'임을 깨달았습니다. 명확한 지시만 있다면 개발 생산성을 폭발적으로 끌어올릴 수 있다는 것을 체감했습니다.
+
+---
+
+## 🔗 참고 자료
+
+- [React 공식 문서](https://react.dev/)
+- [Supabase 공식 문서](https://supabase.com/docs)
+- [Tailwind CSS v4 문서](https://tailwindcss.com/docs)
+- 영감의 원천: [IPPON 그랑프리 쇼츠영상](https://youtube.com/watch?v=0pPxW-EZMCI&themeRefresh=1)
