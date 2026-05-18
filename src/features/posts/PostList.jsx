@@ -6,7 +6,7 @@ import { PostCard } from "./PostCard";
 import { PostSkeleton } from "../../shared/components/Skeleton";
 
 /**
- * [PostList.jsx] - 최종 안정화 + 스켈레톤 로더 버전
+ * [PostList.jsx] - 필터 로직 고도화 및 Empty State 적용 버전
  */
 
 export function PostList({ fetchTrigger, isMyPage = false }) {
@@ -14,7 +14,7 @@ export function PostList({ fetchTrigger, isMyPage = false }) {
   const { showMessage } = useMessage();
   const [posts, setPosts] = useState([]);
   const [sortBy, setSortBy] = useState("popular");
-  const [filter, setFilter] = useState("all");
+  const [filter, setFilter] = useState("all"); // 기간 필터 상태 유지
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [loading, setLoading] = useState(false);
@@ -58,11 +58,13 @@ export function PostList({ fetchTrigger, isMyPage = false }) {
       if (isMyPage && user) {
         query = query.eq("author_id", user.id).order("created_at", { ascending: false });
       } else {
+        // [수정] 정렬 방식과 상관없이 기간 필터를 먼저 적용합니다.
+        const now = new Date();
+        if (filter === "today") query = query.gte("created_at", new Date(now.setHours(0, 0, 0, 0)).toISOString());
+        else if (filter === "week") query = query.gte("created_at", new Date(now.setDate(now.getDate() - 7)).toISOString());
+        else if (filter === "month") query = query.gte("created_at", new Date(now.setMonth(now.getMonth() - 1)).toISOString());
+
         if (sortBy === "popular") {
-          const now = new Date();
-          if (filter === "today") query = query.gte("created_at", new Date(now.setHours(0, 0, 0, 0)).toISOString());
-          else if (filter === "week") query = query.gte("created_at", new Date(now.setDate(now.getDate() - 7)).toISOString());
-          else if (filter === "month") query = query.gte("created_at", new Date(now.setMonth(now.getMonth() - 1)).toISOString());
           query = query.order("avg_rating", { ascending: false }).order("rating_count", { ascending: false });
         } else {
           query = query.order("created_at", { ascending: false });
@@ -79,7 +81,6 @@ export function PostList({ fetchTrigger, isMyPage = false }) {
         } else {
           if (data.length === 0) {
             setHasMore(false);
-            showMessage("모든 전설을 확인했습니다 🎓");
           } else {
             setPosts(prev => {
               const existingIds = new Set(prev.map(p => p.id));
@@ -109,7 +110,6 @@ export function PostList({ fetchTrigger, isMyPage = false }) {
 
   return (
     <section className="bg-transparent relative">
-      {/* 상단 스티키 메뉴 */}
       <div className="sticky top-0 z-30 -mx-6 px-6 py-4 bg-[#f8fafc]/90 dark:bg-slate-950/90 backdrop-blur-2xl border-b border-slate-100 dark:border-slate-900 mb-10 transition-colors duration-500 shadow-sm">
         <div className="flex flex-col gap-4">
           <div className="flex justify-between items-center">
@@ -125,7 +125,7 @@ export function PostList({ fetchTrigger, isMyPage = false }) {
             )}
           </div>
 
-          {!isMyPage && sortBy === "popular" && (
+          {!isMyPage && (
             <div className="flex items-center gap-3 py-1 overflow-x-auto no-scrollbar">
               {[{ id: "today", label: "오늘" }, { id: "week", label: "주간" }, { id: "month", label: "월간" }, { id: "all", label: "전체" }].map((f) => (
                 <button key={f.id} onClick={() => setFilter(f.id)} className={`px-5 py-2 text-xs font-black rounded-full transition-all border-2 shrink-0 ${filter === f.id ? "bg-pink-500 border-pink-500 text-white shadow-lg" : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-400 hover:border-pink-200 dark:hover:border-pink-900"}`}>{f.label}</button>
@@ -135,19 +135,30 @@ export function PostList({ fetchTrigger, isMyPage = false }) {
         </div>
       </div>
 
-      <div className="flex flex-col md:flex-row gap-8 items-start">
-        <div className="flex-1 grid gap-8 w-full">
-          {leftColumnPosts.map((post) => <PostCard key={post.id} post={post} onUpdate={() => fetchPosts(1, true)} />)}
-          {loading && <PostSkeleton />}
+      {/* [수정] 데이터가 없는 경우 (Empty State) */}
+      {!loading && posts.length === 0 ? (
+        <div className="text-center py-40 flex flex-col items-center gap-6 bg-white dark:bg-slate-900 rounded-[40px] border border-dashed border-slate-200 dark:border-slate-800">
+          <span className="text-7xl">🍃</span>
+          <div className="space-y-2">
+            <h3 className="text-2xl font-black text-slate-800 dark:text-slate-100">아직 아무 드립도 없네요!</h3>
+            <p className="text-slate-400 font-bold">당신이 첫 번째 바리스타가 되어보세요.</p>
+          </div>
         </div>
-        <div className="flex-1 hidden md:grid gap-8 w-full">
-          {rightColumnPosts.map((post) => <PostCard key={post.id} post={post} onUpdate={() => fetchPosts(1, true)} />)}
-          {loading && <PostSkeleton />}
+      ) : (
+        <div className="flex flex-col md:flex-row gap-8 items-start">
+          <div className="flex-1 grid gap-8 w-full">
+            {leftColumnPosts.map((post) => <PostCard key={post.id} post={post} onUpdate={() => fetchPosts(1, true)} />)}
+            {loading && <PostSkeleton />}
+          </div>
+          <div className="flex-1 hidden md:grid gap-8 w-full">
+            {rightColumnPosts.map((post) => <PostCard key={post.id} post={post} onUpdate={() => fetchPosts(1, true)} />)}
+            {loading && <PostSkeleton />}
+          </div>
+          <div className="md:hidden flex flex-col gap-8 w-full">
+            {rightColumnPosts.map((post) => <PostCard key={post.id} post={post} onUpdate={() => fetchPosts(1, true)} />)}
+          </div>
         </div>
-        <div className="md:hidden flex flex-col gap-8 w-full">
-          {rightColumnPosts.map((post) => <PostCard key={post.id} post={post} onUpdate={() => fetchPosts(1, true)} />)}
-        </div>
-      </div>
+      )}
 
       {hasMore && <div ref={lastElementRef} className="h-20 w-full" />}
       
